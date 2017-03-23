@@ -1,0 +1,67 @@
+<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--xmlns:tools="http://schemas.android.com/tools"-->
+    <!--xmlns:card_view="http://schemas.android.com/apk/res-auto"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:orientation="vertical"-->
+    <!--tools:context="com.example.baijunfeng.myapplication.fragment.LiteratureFragment">-->
+
+    <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/card_view1"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        card_view:cardCornerRadius="4dp"
+        android:layout_marginLeft="23dp"
+        android:layout_marginRight="23dp"
+        android:padding="10dp"
+        android:layout_marginTop="12dp"
+        tools:context="com.example.baijunfeng.myapplication.fragment.LiteratureFragment">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:text="静夜思"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:padding="12dp"
+            android:textSize="21sp"
+            android:id="@+id/ancient_poetry_title" />
+
+        <TextView
+            android:text="李白"
+            android:layout_width="match_parent"
+            android:layout_height="25dp"
+            android:paddingEnd="18dp"
+            android:gravity="end"
+            android:id="@+id/ancient_poetry_author" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="#ffaa00bb"/>
+
+        <TextView
+            android:text="床前明月光，疑是地上霜。"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="28dp"
+            android:id="@+id/ancient_poetry_sentence" />
+    </LinearLayout>
+
+    <!--<TextView-->
+            <!--android:id="@+id/ancient_poetry_text"-->
+            <!--android:background="?android:attr/selectableItemBackground"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:gravity="center"-->
+            <!--android:text="第一个" />-->
+
+    </android.support.v7.widget.CardView>
+
+<!--</LinearLayout>-->
