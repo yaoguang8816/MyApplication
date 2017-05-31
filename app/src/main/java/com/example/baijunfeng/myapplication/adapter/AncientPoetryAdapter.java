@@ -43,8 +43,14 @@ public class AncientPoetryAdapter extends RecyclerView.Adapter<AncientPoetryAdap
     public static class ViewHolder extends RecyclerView.ViewHolder
     {
         CardView mCardView;
+
+        //诗词标题
         TextView mTitleView;
+
+        //作者名称
         TextView mAuthorView;
+
+        //缩略语-名句
         TextView mSentencesView;
 
         public ViewHolder(View arg0)
@@ -72,6 +78,7 @@ public class AncientPoetryAdapter extends RecyclerView.Adapter<AncientPoetryAdap
     public void onBindViewHolder(final ViewHolder viewHolder, final int i)
     {
         PoetryCardContent content = mDatas.get(i);
+        viewHolder.mCardView.setBackgroundResource(R.drawable.card_bg);
         viewHolder.mTitleView.setText(content.getTitle());
         viewHolder.mAuthorView.setText(content.getAuthor());
         viewHolder.mSentencesView.setText(content.getAbbr());

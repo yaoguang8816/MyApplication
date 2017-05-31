@@ -19,7 +19,7 @@ import com.example.baijunfeng.myapplication.TabActivity;
  */
 
 /**
- * A placeholder fragment containing a simple view.
+ * 用来测试验证一些view的属性状态
  */
 public class ViewTestFragment extends Fragment {
     /**

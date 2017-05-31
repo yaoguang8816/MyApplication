@@ -5,6 +5,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -15,16 +17,36 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.android.volley.Response;
 import com.example.baijunfeng.myapplication.adapter.AncientPoetryAdapter;
 import com.example.baijunfeng.myapplication.adapter.NoteAdapter;
+import com.example.baijunfeng.myapplication.network.NetworkConnection;
 import com.example.baijunfeng.myapplication.utils.PoetryCardContent;
+import com.example.baijunfeng.myapplication.utils.UrlUtils;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
+/**
+ * Created by baijunfeng on 17/3/17.
+ *
+ * 古诗词列表activity
+ * 按照不同作者列出相关作品的简要目录
+ *
+ * 导航列表列出支持的作者，点击作者的时候列表更新为该作者的作品
+ */
 public class AncientPoetryActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+    public static final String TAG = "AncientPoetryActivity";
 
     RecyclerView mRecyclerView;
     AncientPoetryAdapter mAdapter;
@@ -35,7 +57,7 @@ public class AncientPoetryActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ancient_poetry);
+                              setContentView(R.layout.activity_ancient_poetry);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -69,6 +91,7 @@ public class AncientPoetryActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        updateNavigationView(navigationView);
     }
 
     @Override
@@ -103,6 +126,16 @@ public class AncientPoetryActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    private void updateNavigationView(NavigationView view) {
+        Menu menu = view.getMenu();
+        view.getMenu().add(1, 10001, Menu.NONE, "first add menu");
+        view.getMenu().add(1, 10002, Menu.NONE, "second add menu");
+        view.getMenu().add(2, 10003, Menu.NONE, "third add menu");
+        view.getMenu().add(2, 10004, Menu.NONE, "third add menu");
+        view.getMenu().add(2, 10005, Menu.NONE, "third add menu");
+        view.getMenu().findItem(10001).setIcon(R.drawable.ic_menu_camera);
+    }
+
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -111,17 +144,19 @@ public class AncientPoetryActivity extends AppCompatActivity
 
         if (id == R.id.nav_camera) {
             // Handle the camera action
-            mAdapter.updateDatas(getContentList(DUMU, new ArrayList<>(Arrays.asList(0,2,3))));
+            getAndUpdateDatas("shi", "libai");
+//            mAdapter.updateDatas(getContentList(DUMU, new ArrayList<>(Arrays.asList(0,2,3))));
         } else if (id == R.id.nav_gallery) {
-            mAdapter.updateDatas(getContentList(SUSHI, new ArrayList<>(Arrays.asList(0,1,2))));
+            getAndUpdateDatas("shi", "sushi");
         } else if (id == R.id.nav_slideshow) {
-            mAdapter.updateDatas(getContentList(LIBAI, new ArrayList<>(Arrays.asList(0,2,3,1))));
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+            getAndUpdateDatas("shi", "dufu");
+//            mAdapter.updateDatas(getContentList(LIBAI, new ArrayList<>(Arrays.asList(0,2,3,1))));
+        } else if (id == 10001) {
+            Log.d(TAG, "10001 clicked");
+        } else if (id == 10002) {
+            Log.d(TAG, "10002 clicked");
+        } else if (id == 10003) {
+            Log.d(TAG, "10003 clicked");
         }
 
         mAdapter.notifyDataSetChanged();
@@ -137,6 +172,73 @@ public class AncientPoetryActivity extends AppCompatActivity
     public static final int DUMU = 1000;
     public static final int SUSHI = 2000;
     public static final int LIBAI = 3000;
+
+    private void getAndUpdateDatas(String type, String author) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                NetworkConnection.getInstance().getJSONByVolley(UrlUtils.getUrlByAuthor(type, author), new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            int code = response.optInt("code");
+                            if (code == 0) {
+                                ArrayList<PoetryCardContent> contentList = new ArrayList<PoetryCardContent>();
+                                String author = response.getString("name");
+                                JSONObject json;
+
+                                JSONArray array = response.getJSONArray("data");
+                                for (int i = 0; i < array.length(); i++) {
+                                    json =  (JSONObject) array.get(i);
+                                    PoetryCardContent content = new PoetryCardContent();
+                                    content.mAuthor = author;
+                                    content.mTitle = json.getString("title");
+                                    content.mAbbr = json.getString("abbr");
+                                    contentList.add(content);
+                                }
+                                mAdapter.updateDatas(contentList);
+                                mAdapter.notifyDataSetChanged();
+                            } else {
+                                Log.d(TAG, "Response error!");
+                            }
+
+                        } catch (Exception e) {
+                            Log.e(TAG, e.toString());
+                        }
+                    }
+                }, null);
+            }
+        });
+        thread.start();
+    }
+
+    String getJson(URL url) {
+        String JsonStr = "";
+        try {
+            HttpURLConnection httpconn = (HttpURLConnection) url
+                    .openConnection();
+            InputStreamReader inputReader = new InputStreamReader(httpconn
+                    .getInputStream());
+
+            BufferedReader buffReader = new BufferedReader(inputReader);
+
+            String line = "";
+
+            while ((line = buffReader.readLine()) != null) {
+//                lineIndex++;
+                JsonStr += line;
+
+            }
+            Log.d("baijf1", JsonStr);
+//            resolveJson(JsonStr);
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return JsonStr;
+    }
 
     private List<PoetryCardContent> getContentList(int index, List<Integer> items) {
         List<PoetryCardContent> contentList = new ArrayList<>();

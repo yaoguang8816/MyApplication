@@ -5,11 +5,16 @@ package com.example.baijunfeng.myapplication.utils;
  */
 
 public class PoetryCardContent {
-    private String mTitle;
-    private String mAuthor;
-    private String mAbbr;
-    private String mContent;
-    private String mNote;
+    //名称
+    public String mTitle;
+    //作者
+    public String mAuthor;
+    //代表句-名句
+    public String mAbbr;
+    //完整内容
+    public String mContent;
+    //备注
+    public String mNote;
 
     public PoetryCardContent() {
     }

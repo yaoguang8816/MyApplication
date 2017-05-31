@@ -1,17 +1,23 @@
 package com.example.baijunfeng.myapplication;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * MainActivity for this Application.
@@ -44,7 +50,20 @@ public class MainActivity extends AppCompatActivity {
 
         //Snackbar Test
         findViewById(R.id.button2).setOnClickListener(
-                (v) -> SnackBarTest(v)
+//                (v) -> SnackBarTest(v)
+                (v) -> {
+                    Thread thread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                getJson(new URL("https://yaoguang8816.github.io/json/json_test.xml"));
+                            } catch (MalformedURLException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                    thread.start();
+                }
         );
 
         findViewById(R.id.button3).setOnClickListener(
@@ -116,5 +135,32 @@ public class MainActivity extends AppCompatActivity {
             snackBar.setText("Snackbar 点击事件发生");
         });
         snackBar.setActionTextColor(0xaa0f7766);
+    }
+
+    void getJson(URL url) {
+        try {
+            HttpURLConnection httpconn = (HttpURLConnection) url
+                    .openConnection();
+            InputStreamReader inputReader = new InputStreamReader(httpconn
+                    .getInputStream());
+
+            BufferedReader buffReader = new BufferedReader(inputReader);
+
+            String line = "";
+            String JsonStr = "";
+
+            while ((line = buffReader.readLine()) != null) {
+//                lineIndex++;
+                JsonStr += line;
+
+            }
+            Log.d("baijf1", JsonStr);
+//            resolveJson(JsonStr);
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
     }
 }
