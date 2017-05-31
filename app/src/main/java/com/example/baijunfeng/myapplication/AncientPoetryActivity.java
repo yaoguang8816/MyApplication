@@ -1,5 +1,6 @@
 package com.example.baijunfeng.myapplication;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -7,6 +8,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -86,6 +88,17 @@ public class AncientPoetryActivity extends AppCompatActivity
         mRecyclerView.setLayoutManager(linearLayoutManager);
         //设置适配器
         mAdapter = new AncientPoetryAdapter(this, getContentList(LIBAI, new ArrayList<>(Arrays.asList(0,1,2))));
+        //设置适配器Item点击回调接口
+        mAdapter.setOnItemClickListener(new AncientPoetryAdapter.CardItemClickListener() {
+            @Override
+            public void onItemClick(PoetryCardContent content) {
+                Intent intent = new Intent(AncientPoetryActivity.this, LiteratureDetailActivity.class);
+                intent.putExtra(LiteratureDetailActivity.CARD_TITLE, content.mTitle);
+                intent.putExtra(LiteratureDetailActivity.CARD_AUTHOR, content.mAuthor);
+                intent.putExtra(LiteratureDetailActivity.CARD_CONTENT, content.mContent);
+                startActivity(intent);
+            }
+        });
 //        mNoteAdapter = new NoteAdapter(this, mDatas);
         mRecyclerView.setAdapter(mAdapter);
 

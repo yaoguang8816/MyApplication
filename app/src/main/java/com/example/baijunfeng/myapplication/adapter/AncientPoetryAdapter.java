@@ -22,10 +22,11 @@ public class AncientPoetryAdapter extends RecyclerView.Adapter<AncientPoetryAdap
     private LayoutInflater mInflater;
 //    private List<Integer> mDatas;
 
+    private CardItemClickListener mOnItemClickLitener;
+
     private List<PoetryCardContent> mDatas;
 
-    public AncientPoetryAdapter(Context context, List<PoetryCardContent> data)
-    {
+    public AncientPoetryAdapter(Context context, List<PoetryCardContent> data) {
         mInflater = LayoutInflater.from(context);
         mDatas = data;
     }
@@ -35,13 +36,11 @@ public class AncientPoetryAdapter extends RecyclerView.Adapter<AncientPoetryAdap
     }
 
     @Override
-    public int getItemCount()
-    {
+    public int getItemCount() {
         return mDatas.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder
-    {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         CardView mCardView;
 
         //诗词标题
@@ -60,8 +59,7 @@ public class AncientPoetryAdapter extends RecyclerView.Adapter<AncientPoetryAdap
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i)
-    {
+    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View view = mInflater.inflate(R.layout.ancient_poetry_adapter_item,
                 viewGroup, false);
         ViewHolder viewHolder = new ViewHolder(view);
@@ -75,28 +73,32 @@ public class AncientPoetryAdapter extends RecyclerView.Adapter<AncientPoetryAdap
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder viewHolder, final int i)
-    {
+    public void onBindViewHolder(final ViewHolder viewHolder, final int i) {
         PoetryCardContent content = mDatas.get(i);
         viewHolder.mCardView.setBackgroundResource(R.drawable.card_bg);
         viewHolder.mTitleView.setText(content.getTitle());
         viewHolder.mAuthorView.setText(content.getAuthor());
         viewHolder.mSentencesView.setText(content.getAbbr());
-//
-//        //如果设置了回调，则设置点击事件
-//        if (mOnItemClickLitener != null)
-//        {
-//            viewHolder.itemView.setOnClickListener(new OnClickListener()
-//            {
-//                @Override
-//                public void onClick(View v)
-//                {
-//                    mOnItemClickLitener.onItemClick(viewHolder.itemView, i);
-//                }
-//            });
-//
-//        }
 
+        //如果设置了回调，则设置点击事件
+        if (mOnItemClickLitener != null) {
+            viewHolder.mCardView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mOnItemClickLitener.onItemClick(content);
+                }
+            });
+
+        }
+
+    }
+
+    public void setOnItemClickListener(CardItemClickListener listener) {
+        mOnItemClickLitener = listener;
+    }
+
+    public interface CardItemClickListener {
+        public void onItemClick(PoetryCardContent content);
     }
 
 }

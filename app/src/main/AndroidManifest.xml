@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name="com.example.baijunfeng.myapplication.MyApplication"
+        android:name=".MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -32,10 +32,14 @@
         <activity
             android:name=".CollapsingToolbarAndScrollingActivity"
             android:label="@string/title_activity_collpsing_toolbar_and_scrolling"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".AncientPoetryActivity"
             android:label="@string/title_activity_ancient_poetry"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".LiteratureDetailActivity"
+            android:label="@string/title_activity_literature_detail"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
