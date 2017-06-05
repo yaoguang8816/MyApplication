@@ -5,6 +5,8 @@ package com.example.baijunfeng.myapplication.utils;
  */
 
 public class PoetryCardContent {
+    //作品ID
+    public String mId;
     //名称
     public String mTitle;
     //作者
@@ -35,6 +37,9 @@ public class PoetryCardContent {
         mNote = note;
     }
 
+    public String getId() {
+        return mId;
+    }
     public String getTitle() {
         return mTitle;
     }

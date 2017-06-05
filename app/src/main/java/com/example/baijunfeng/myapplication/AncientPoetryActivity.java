@@ -6,9 +6,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Base64;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -23,20 +21,22 @@ import com.android.volley.Response;
 import com.example.baijunfeng.myapplication.adapter.AncientPoetryAdapter;
 import com.example.baijunfeng.myapplication.adapter.NoteAdapter;
 import com.example.baijunfeng.myapplication.network.NetworkConnection;
+import com.example.baijunfeng.myapplication.utils.Author;
 import com.example.baijunfeng.myapplication.utils.PoetryCardContent;
 import com.example.baijunfeng.myapplication.utils.UrlUtils;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 /**
  * Created by baijunfeng on 17/3/17.
@@ -53,6 +53,8 @@ public class AncientPoetryActivity extends AppCompatActivity
     RecyclerView mRecyclerView;
     AncientPoetryAdapter mAdapter;
     NoteAdapter mNoteAdapter;
+
+    HashMap<String, Author> mMenuDataMap = new HashMap<>();
 
     ArrayList<PoetryCardContent> mDatas;
 
@@ -80,6 +82,9 @@ public class AncientPoetryActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
+        /*
+         * 初始化adapter
+         */
         //得到控件
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         //设置布局管理器
@@ -93,18 +98,21 @@ public class AncientPoetryActivity extends AppCompatActivity
             @Override
             public void onItemClick(PoetryCardContent content) {
                 Intent intent = new Intent(AncientPoetryActivity.this, LiteratureDetailActivity.class);
+                intent.putExtra(LiteratureDetailActivity.CARD_ID, content.mId);
                 intent.putExtra(LiteratureDetailActivity.CARD_TITLE, content.mTitle);
                 intent.putExtra(LiteratureDetailActivity.CARD_AUTHOR, content.mAuthor);
                 intent.putExtra(LiteratureDetailActivity.CARD_CONTENT, content.mContent);
                 startActivity(intent);
             }
         });
-//        mNoteAdapter = new NoteAdapter(this, mDatas);
         mRecyclerView.setAdapter(mAdapter);
 
+        /*
+         * 导航栏配置
+         */
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        updateNavigationView(navigationView);
+        getMenuDatas(navigationView);
     }
 
     @Override
@@ -139,14 +147,73 @@ public class AncientPoetryActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    private void updateNavigationView(NavigationView view) {
+    private void getMenuDatas(NavigationView view) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                NetworkConnection.getInstance().getJSONByVolley(UrlUtils.getShiAuthorList(), new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            int code = response.optInt("code");
+                            if (code == 0) {
+                                ArrayList<Author> authorList = new ArrayList<Author>();
+                                JSONObject json;
+
+                                JSONArray array = response.getJSONArray("data");
+                                for (int i = 0; i < array.length(); i++) {
+                                    json =  (JSONObject) array.get(i);
+                                    Author author = new Author();
+                                    try {
+                                        author.mId = json.getString("id");
+                                        author.mIndex = json.getString("index");
+                                        author.mTitle = json.getString("title");
+                                        authorList.add(author);
+                                    } catch (JSONException e) {
+                                        Log.d(TAG, "Find an error for some author, skip this.");
+                                    }
+                                }
+                                updateMenuData(authorList);
+                                updateNavigationView(view, authorList);
+                            } else {
+                                Log.d(TAG, "Response error!");
+                            }
+
+                        } catch (Exception e) {
+                            Log.e(TAG, e.toString());
+                        }
+                    }
+                }, null);
+            }
+        });
+        thread.start();
+    }
+
+    private void updateMenuData(ArrayList<Author> authorList) {
+        for (Author author : authorList) {
+            mMenuDataMap.put(author.mId, author);
+        }
+    }
+
+    private void updateNavigationView(NavigationView view, ArrayList<Author> authorList) {
         Menu menu = view.getMenu();
-        view.getMenu().add(1, 10001, Menu.NONE, "first add menu");
-        view.getMenu().add(1, 10002, Menu.NONE, "second add menu");
-        view.getMenu().add(2, 10003, Menu.NONE, "third add menu");
-        view.getMenu().add(2, 10004, Menu.NONE, "third add menu");
-        view.getMenu().add(2, 10005, Menu.NONE, "third add menu");
-        view.getMenu().findItem(10001).setIcon(R.drawable.ic_menu_camera);
+        for (Author author : authorList) {
+            view.getMenu().add(1, encodeMenuId(author.mId), Menu.NONE, author.mTitle);
+//            view.getMenu().findItem(10001).setIcon(R.drawable.ic_menu_camera);
+        }
+        view.getMenu().notify();
+    }
+
+    /**
+     * 为防止从服务器获取的作者Id以0开头导致字符串转数字时发生丢失，所以在获取的作者id之前加上"1"，然后再转为数字
+     * 同理，把相关数字转回字符串的时候需要去掉首位的"1" {@decodeMenuId}
+     */
+    private int encodeMenuId(String id) {
+        return Integer.valueOf("1" + id);
+    }
+    private String decodeMenuId(int id) {
+        return String.valueOf(id).substring(1);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -154,23 +221,7 @@ public class AncientPoetryActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-            getAndUpdateDatas("shi", "libai");
-//            mAdapter.updateDatas(getContentList(DUMU, new ArrayList<>(Arrays.asList(0,2,3))));
-        } else if (id == R.id.nav_gallery) {
-            getAndUpdateDatas("shi", "sushi");
-        } else if (id == R.id.nav_slideshow) {
-            getAndUpdateDatas("shi", "dufu");
-//            mAdapter.updateDatas(getContentList(LIBAI, new ArrayList<>(Arrays.asList(0,2,3,1))));
-        } else if (id == 10001) {
-            Log.d(TAG, "10001 clicked");
-        } else if (id == 10002) {
-            Log.d(TAG, "10002 clicked");
-        } else if (id == 10003) {
-            Log.d(TAG, "10003 clicked");
-        }
+        getAndUpdateDatas("shi", mMenuDataMap.get(decodeMenuId(id)).mIndex);
 
         mAdapter.notifyDataSetChanged();
 
@@ -205,6 +256,7 @@ public class AncientPoetryActivity extends AppCompatActivity
                                 for (int i = 0; i < array.length(); i++) {
                                     json =  (JSONObject) array.get(i);
                                     PoetryCardContent content = new PoetryCardContent();
+                                    content.mId = json.getString("id");
                                     content.mAuthor = author;
                                     content.mTitle = json.getString("title");
                                     content.mAbbr = json.getString("abbr");
