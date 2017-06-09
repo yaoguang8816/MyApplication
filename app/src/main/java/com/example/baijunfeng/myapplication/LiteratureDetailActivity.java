@@ -80,7 +80,7 @@ public class LiteratureDetailActivity extends AppCompatActivity {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                NetworkConnection.getInstance().getJSONByVolley(UrlUtils.getUrlById(id), new Response.Listener<JSONObject>() {
+                NetworkConnection.getInstance().getJSONByVolley(UrlUtils.getLiteratureContentUrlById(id), new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {

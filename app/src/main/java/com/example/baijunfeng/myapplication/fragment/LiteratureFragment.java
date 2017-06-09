@@ -12,13 +12,14 @@ import android.view.ViewGroup;
 
 import com.example.baijunfeng.myapplication.AncientPoetryActivity;
 import com.example.baijunfeng.myapplication.R;
+import com.example.baijunfeng.myapplication.utils.Util;
 
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link LiteratureFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class LiteratureFragment extends Fragment {
+public class LiteratureFragment extends Fragment implements View.OnClickListener{
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -69,16 +70,32 @@ public class LiteratureFragment extends Fragment {
         // Inflate the layout for this fragment
         View view =  inflater.inflate(R.layout.fragment_literature, container, false);
 
-        CardView cardView = (CardView) view.findViewById(R.id.card_view1);
-        cardView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), AncientPoetryActivity.class);
-                startActivity(intent);
-            }
-        });
+//        CardView cardView = (CardView) view.findViewById(R.id.card_view1);
+        view.findViewById(R.id.card_view_shi).setOnClickListener(this);
+        view.findViewById(R.id.card_view_ci).setOnClickListener(this);
+        view.findViewById(R.id.card_view_guwen).setOnClickListener(this);
 
         return view;
     }
 
+    @Override
+    public void onClick(View v) {
+        Intent intent = new Intent(getActivity(), AncientPoetryActivity.class);
+
+        String type = "";
+        switch (v.getId()) {
+            case R.id.card_view_shi:
+                type = Util.LITERATURE_TYPE.SHI;
+                break;
+            case R.id.card_view_ci:
+                type = Util.LITERATURE_TYPE.CI;
+                break;
+            case R.id.card_view_guwen:
+                type = Util.LITERATURE_TYPE.GUTISHI;
+                break;
+        }
+
+        intent.putExtra(Util.LITERATURE_TYPE_EXTRA, type);
+        startActivity(intent);
+    }
 }

@@ -24,6 +24,7 @@ import com.example.baijunfeng.myapplication.network.NetworkConnection;
 import com.example.baijunfeng.myapplication.utils.Author;
 import com.example.baijunfeng.myapplication.utils.PoetryCardContent;
 import com.example.baijunfeng.myapplication.utils.UrlUtils;
+import com.example.baijunfeng.myapplication.utils.Util;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -54,7 +55,13 @@ public class AncientPoetryActivity extends AppCompatActivity
     AncientPoetryAdapter mAdapter;
     NoteAdapter mNoteAdapter;
 
+    //NavigationView所要使用的数据map，数据为作者ID和Author对象，该数据用来点击Menu的时候找到正确的作者信息
     HashMap<String, Author> mMenuDataMap = new HashMap<>();
+
+    /**
+     * 文学作品类型 {@Util.LITERATURE_TYPE}
+     */
+    String mType;
 
     ArrayList<PoetryCardContent> mDatas;
 
@@ -62,6 +69,12 @@ public class AncientPoetryActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
                               setContentView(R.layout.activity_ancient_poetry);
+
+        mType = getIntent().getStringExtra(Util.LITERATURE_TYPE_EXTRA);
+        if (mType == null || mType.length() <= 0) {
+            mType = Util.LITERATURE_TYPE.SHI;
+        }
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -147,11 +160,15 @@ public class AncientPoetryActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * 从服务器获取作者列表，用获得数据初始化NavigationView
+     * @param view
+     */
     private void getMenuDatas(NavigationView view) {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                NetworkConnection.getInstance().getJSONByVolley(UrlUtils.getShiAuthorList(), new Response.Listener<JSONObject>() {
+                NetworkConnection.getInstance().getJSONByVolley(UrlUtils.getAuthorList(mType), new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
@@ -190,12 +207,21 @@ public class AncientPoetryActivity extends AppCompatActivity
         thread.start();
     }
 
+    /**
+     * 更新NavigationView列表数据
+     * @param authorList 作者列表
+     */
     private void updateMenuData(ArrayList<Author> authorList) {
         for (Author author : authorList) {
             mMenuDataMap.put(author.mId, author);
         }
     }
 
+    /**
+     * 更新NavigationView列表，其中menu的itemId为从服务器获取的作者id首位加1，显示的menu为作者title
+     * @param view
+     * @param authorList
+     */
     private void updateNavigationView(NavigationView view, ArrayList<Author> authorList) {
         Menu menu = view.getMenu();
         for (Author author : authorList) {
@@ -221,7 +247,7 @@ public class AncientPoetryActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        getAndUpdateDatas("shi", mMenuDataMap.get(decodeMenuId(id)).mIndex);
+        getAndUpdateContentDatas(mType, mMenuDataMap.get(decodeMenuId(id)).mIndex);
 
         mAdapter.notifyDataSetChanged();
 
@@ -230,18 +256,16 @@ public class AncientPoetryActivity extends AppCompatActivity
         return true;
     }
 
-    /*
-    Debug Start
+    /**
+     * 从服务器获取相关作品
+     * @param type 作品类型 {@Util.LITERATURE_TYPE}
+     * @param author 作者名称 {@Author.mIndex}
      */
-    public static final int DUMU = 1000;
-    public static final int SUSHI = 2000;
-    public static final int LIBAI = 3000;
-
-    private void getAndUpdateDatas(String type, String author) {
+    private void getAndUpdateContentDatas(String type, String author) {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                NetworkConnection.getInstance().getJSONByVolley(UrlUtils.getUrlByAuthor(type, author), new Response.Listener<JSONObject>() {
+                NetworkConnection.getInstance().getJSONByVolley(UrlUtils.getLiteratureListUrlByAuthor(type, author), new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
@@ -278,48 +302,43 @@ public class AncientPoetryActivity extends AppCompatActivity
         thread.start();
     }
 
-    String getJson(URL url) {
-        String JsonStr = "";
-        try {
-            HttpURLConnection httpconn = (HttpURLConnection) url
-                    .openConnection();
-            InputStreamReader inputReader = new InputStreamReader(httpconn
-                    .getInputStream());
+//    String getJson(URL url) {
+//        String JsonStr = "";
+//        try {
+//            HttpURLConnection httpconn = (HttpURLConnection) url
+//                    .openConnection();
+//            InputStreamReader inputReader = new InputStreamReader(httpconn
+//                    .getInputStream());
+//
+//            BufferedReader buffReader = new BufferedReader(inputReader);
+//
+//            String line = "";
+//
+//            while ((line = buffReader.readLine()) != null) {
+////                lineIndex++;
+//                JsonStr += line;
+//
+//            }
+//            Log.d("baijf1", JsonStr);
+////            resolveJson(JsonStr);
+//
+//        } catch (IOException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//        return JsonStr;
+//    }
 
-            BufferedReader buffReader = new BufferedReader(inputReader);
+    /*
+    Debug Start
+     */
+    public static final int DUMU = 1000;
+    public static final int SUSHI = 2000;
+    public static final int LIBAI = 3000;
 
-            String line = "";
-
-            while ((line = buffReader.readLine()) != null) {
-//                lineIndex++;
-                JsonStr += line;
-
-            }
-            Log.d("baijf1", JsonStr);
-//            resolveJson(JsonStr);
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return JsonStr;
-    }
-
+    //默认显示列表
     private List<PoetryCardContent> getContentList(int index, List<Integer> items) {
         List<PoetryCardContent> contentList = new ArrayList<>();
-//        switch (index) {
-//            case 1:
-//                for (int i = 0; i < items.size(); i++) {
-//                    contentList.add(getContent((index << 4) & items.get(i)));
-//                }
-//                break;
-//            case 2:
-//                content = new PoetryCardContent("遣怀","杜牧","落魄江湖载酒行，楚腰纤细掌中轻。");
-//                break;
-//            case 3:
-//                content = new PoetryCardContent("遣怀","杜牧","落魄江湖载酒行，楚腰纤细掌中轻。");
-//                break;
-//        }
         for (int i = 0; i < items.size(); i++) {
             contentList.add(getContent(index | items.get(i).intValue()));
         }
