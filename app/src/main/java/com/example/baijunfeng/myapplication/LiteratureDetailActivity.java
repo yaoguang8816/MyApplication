@@ -1,6 +1,8 @@
 package com.example.baijunfeng.myapplication;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -13,7 +15,10 @@ import android.widget.TextView;
 
 import com.android.volley.Response;
 import com.example.baijunfeng.myapplication.R;
+import com.example.baijunfeng.myapplication.database.LiteratureContentProvider;
+import com.example.baijunfeng.myapplication.database.LiteratureDatabaseHelper;
 import com.example.baijunfeng.myapplication.network.NetworkConnection;
+import com.example.baijunfeng.myapplication.utils.Author;
 import com.example.baijunfeng.myapplication.utils.PoetryCardContent;
 import com.example.baijunfeng.myapplication.utils.UrlUtils;
 
@@ -26,11 +31,14 @@ import java.util.ArrayList;
 public class LiteratureDetailActivity extends AppCompatActivity {
     public static final String TAG = "LiteratureDetail";
 
+    //卡片id，该id对应详细作品json文件名称，如 300100000 对应李白作品 300100000.json
     public static final String CARD_ID = "id";
     public static final String CARD_TITLE = "title";
     public static final String CARD_AUTHOR = "author";
     public static final String CARD_CONTENT = "content";
 
+    CollapsingToolbarLayout mCollapsingToolbarLayout;
+    TextView mAuthorView;
     TextView mContentView;
     TextView mAnnotationView;
 
@@ -38,11 +46,11 @@ public class LiteratureDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_literature_detail);
-        CollapsingToolbarLayout collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
+        mCollapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        TextView authorView = (TextView) findViewById(R.id.author_name);
+        mAuthorView = (TextView) findViewById(R.id.author_name);
         mContentView =  (TextView) findViewById(R.id.literature_content);
         mAnnotationView = (TextView) findViewById(R.id.literature_annotation);
 
@@ -61,49 +69,116 @@ public class LiteratureDetailActivity extends AppCompatActivity {
         String author = intent.getStringExtra(CARD_AUTHOR);
         String content = intent.getStringExtra(CARD_CONTENT);
 
-        collapsingToolbarLayout.setTitle(title);
-        authorView.setText(author);
+        if (title != null && title.length() > 0) {
+            mCollapsingToolbarLayout.setTitle(title);
+        }
+        if (author != null && author.length() > 0) {
+            mAuthorView.setText(author);
+        }
 
         if (content != null) {
             mContentView.setText(content);
         } else {
             getContent(id);
-//            content =  "长安一片月，万户捣衣声。\n秋风吹不尽，总是玉关情。\n何日平胡虏，良人罢远征。";
-//            String annotation = "注释：\n子夜吴歌：《子夜歌》系六朝乐府中的吴声歌曲。相传是晋代一名叫子夜的女子创制，多写哀怨眷恋之情，分春、夏、秋、冬四季。李白依格了四首，此首属秋歌。\n捣衣：将洗过的衣服放在砧石上，用木杵捣去碱质。这里指人们准备寒衣。\n玉关：即玉门关。虏：对敌方的蔑称。良人：丈夫。\n【赏析】：月色如银的京城，表面上一片平静，但捣衣声中却蕴含着千家万户的痛苦；秋风不息，也寄托着对边关思念的深情。读来让人怦然心动。结句是闺妇的期待，也是征人的心声。";
-//            mContentView.setText(content);
-//            mAnnotationView.setVisibility(View.VISIBLE);
-//            mAnnotationView.setText(annotation);
         }
     }
 
+    private void updateUI(Author.LiteratureDetail detail) {
+        if (detail.mAuthor != null && detail.mAuthor.length() > 0) {
+            mAuthorView.setText(detail.mAuthor);
+        } else if (detail.mFrom != null && detail.mFrom.length() > 0) {
+            mAuthorView.setText(detail.mFrom);
+        } else {
+            mAuthorView.setText(getIntent().getStringExtra(CARD_AUTHOR));
+        }
+
+        if (detail.mTitle != null && detail.mTitle.length() > 0) {
+            mCollapsingToolbarLayout.setTitle(detail.mTitle);
+        } else {
+            mCollapsingToolbarLayout.setTitle(getIntent().getStringExtra(CARD_TITLE));
+        }
+        mContentView.setText(detail.mContent);
+        mAnnotationView.setVisibility(View.VISIBLE);
+        mAnnotationView.setText(detail.mAnnotation);
+    }
+
     private void getContent(String id) {
+        //如果本地数据库没有，则从网络获取数据
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
+                Author.LiteratureDetail detail = new Author.LiteratureDetail();
+
+                SQLiteDatabase sqlDB = LiteratureDatabaseHelper.getInstance().getReadableDatabase();
+                Cursor cursor = sqlDB.query(LiteratureDatabaseHelper.LiteratureColumns.TABLE_NAME, null,
+                        LiteratureDatabaseHelper.LiteratureColumns.LITERATURE_INDEX + "=?", new String[] {id}, null, null, null);
+
+//                //通过provider访问数据库，如果需要，打开即可
+//                Cursor cursor = this.getContentResolver().query(LiteratureDatabaseHelper.LiteratureColumns.CONTENT_URI, null,
+//                LiteratureDatabaseHelper.LiteratureColumns.LITERATURE_INDEX + "=?", new String[] {id}, null);
+                try {
+                    if (cursor != null) {
+                        if (cursor.moveToFirst()) {
+                            detail.mId = cursor.getString(cursor.getColumnIndex(LiteratureDatabaseHelper.LiteratureColumns.LITERATURE_INDEX));
+                            detail.mAuthor = cursor.getString(cursor.getColumnIndex(LiteratureDatabaseHelper.LiteratureColumns.LITERATURE_AUTHOR));
+                            detail.mTitle = cursor.getString(cursor.getColumnIndex(LiteratureDatabaseHelper.LiteratureColumns.LITERATURE_TITLE));
+                            detail.mFrom = cursor.getString(cursor.getColumnIndex(LiteratureDatabaseHelper.LiteratureColumns.LITERATURE_FROM));
+                            detail.mContent = cursor.getString(cursor.getColumnIndex(LiteratureDatabaseHelper.LiteratureColumns.LITERATURE_CONTENT));
+                            detail.mAnnotation = cursor.getString(cursor.getColumnIndex(LiteratureDatabaseHelper.LiteratureColumns.LITERATURE_ANNOTATION));
+                            updateUI(detail);
+                            return;
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.d(TAG, e.toString());
+                } finally {
+                    if (cursor != null) {
+                        cursor.close();
+                    }
+                }
+
                 NetworkConnection.getInstance().getJSONByVolley(UrlUtils.getLiteratureContentUrlById(id), new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            String content_id = response.getString("id");
-                            if (content_id.equals(id)) {
-                                try {
-                                    String content = response.getString("content");
-                                    mContentView.setText(content);
-                                } catch (JSONException e) {
-                                    Log.d(TAG, "没有内容!");
+                            try {
+                                detail.mId = response.getString("id");
+                                if (detail.mId == null || detail.mId.length() <= 0) {
+                                    return;
                                 }
-                                try {
-                                    String annotation = response.getString("annotation");
-                                    mAnnotationView.setVisibility(View.VISIBLE);
-                                    mAnnotationView.setText(annotation);
-                                } catch (JSONException e) {
-                                    Log.d(TAG, "没有注释!");
-                                }
-                            } else {
-                                Log.d(TAG, "内容与所请求不匹配!");
+                            } catch (JSONException e) {
+                                Log.d(TAG, "没有author!");
                             }
+                            try {
+                                detail.mAuthor = response.getString("author");
+                            } catch (JSONException e) {
+                                Log.d(TAG, "没有author!");
+                            }
+                            try {
+                                detail.mTitle = response.getString("title");
+                            } catch (JSONException e) {
+                                Log.d(TAG, "没有title!");
+                            }
+                            try {
+                                detail.mFrom = response.getString("from");
+                            } catch (JSONException e) {
+                                Log.d(TAG, "没有From!");
+                            }
+                            try {
+                                detail.mContent = response.getString("content");
+                            } catch (JSONException e) {
+                                Log.d(TAG, "没有内容!");
+                            }
+                            try {
+                                detail.mAnnotation = response.getString("annotation");
+                            } catch (JSONException e) {
+                                Log.d(TAG, "没有注释!");
+                            }
+                            updateUI(detail);
 
+                            //从网络获取的新数据，更新到数据库
+                            LiteratureDatabaseHelper.getInstance().insertLiterature(detail);
                         } catch (Exception e) {
                             Log.e(TAG, e.toString());
                         }

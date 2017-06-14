@@ -3,6 +3,7 @@
     package="com.example.baijunfeng.myapplication">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:name=".MyApplication"
@@ -40,7 +41,11 @@
         <activity
             android:name=".LiteratureDetailActivity"
             android:label="@string/title_activity_literature_detail"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <!--目前不支持对外数据库访问，如果需要支持，打开此处provider定义即可-->
+        <!--<provider android:name=".database.LiteratureContentProvider" android:authorities="com.example.baijunfeng.myapplication.database.LiteratureDatabaseHelper"/>-->
+
     </application>
 
 </manifest>

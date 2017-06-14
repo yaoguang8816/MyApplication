@@ -91,6 +91,9 @@ public class LiteratureFragment extends Fragment implements View.OnClickListener
                 type = Util.LITERATURE_TYPE.CI;
                 break;
             case R.id.card_view_guwen:
+                type = Util.LITERATURE_TYPE.GUWEN;
+                break;
+            case R.id.card_view_gutishi:
                 type = Util.LITERATURE_TYPE.GUTISHI;
                 break;
         }

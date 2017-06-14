@@ -1,9 +1,12 @@
 package com.example.baijunfeng.myapplication;
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -20,7 +23,10 @@ import android.view.MenuItem;
 import com.android.volley.Response;
 import com.example.baijunfeng.myapplication.adapter.AncientPoetryAdapter;
 import com.example.baijunfeng.myapplication.adapter.NoteAdapter;
+import com.example.baijunfeng.myapplication.database.LiteratureContentProvider;
+import com.example.baijunfeng.myapplication.database.LiteratureDatabaseHelper;
 import com.example.baijunfeng.myapplication.network.NetworkConnection;
+import com.example.baijunfeng.myapplication.network.NetworkStatus;
 import com.example.baijunfeng.myapplication.utils.Author;
 import com.example.baijunfeng.myapplication.utils.PoetryCardContent;
 import com.example.baijunfeng.myapplication.utils.UrlUtils;
@@ -59,11 +65,14 @@ public class AncientPoetryActivity extends AppCompatActivity
     HashMap<String, Author> mMenuDataMap = new HashMap<>();
 
     /**
-     * 文学作品类型 {@Util.LITERATURE_TYPE}
+     * 文学作品类型 {@link Util.LITERATURE_TYPE}
      */
     String mType;
 
-    ArrayList<PoetryCardContent> mDatas;
+    /**
+     * 当前页面对应作者 {@link Author}
+     */
+    Author mCurrentAuthor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,8 +119,13 @@ public class AncientPoetryActivity extends AppCompatActivity
         mAdapter.setOnItemClickListener(new AncientPoetryAdapter.CardItemClickListener() {
             @Override
             public void onItemClick(PoetryCardContent content) {
+                if (mCurrentAuthor == null) {
+                    return;
+                }
                 Intent intent = new Intent(AncientPoetryActivity.this, LiteratureDetailActivity.class);
-                intent.putExtra(LiteratureDetailActivity.CARD_ID, content.mId);
+
+                //ID 由 作者ID + 作品类型 + 作品ID构成
+                intent.putExtra(LiteratureDetailActivity.CARD_ID, mCurrentAuthor.mId + Util.literatureTypeToInt(mType) + content.mId);
                 intent.putExtra(LiteratureDetailActivity.CARD_TITLE, content.mTitle);
                 intent.putExtra(LiteratureDetailActivity.CARD_AUTHOR, content.mAuthor);
                 intent.putExtra(LiteratureDetailActivity.CARD_CONTENT, content.mContent);
@@ -233,7 +247,7 @@ public class AncientPoetryActivity extends AppCompatActivity
 
     /**
      * 为防止从服务器获取的作者Id以0开头导致字符串转数字时发生丢失，所以在获取的作者id之前加上"1"，然后再转为数字
-     * 同理，把相关数字转回字符串的时候需要去掉首位的"1" {@decodeMenuId}
+     * 同理，把相关数字转回字符串的时候需要去掉首位的"1" {@link #decodeMenuId}
      */
     private int encodeMenuId(String id) {
         return Integer.valueOf("1" + id);
@@ -247,7 +261,7 @@ public class AncientPoetryActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        getAndUpdateContentDatas(mType, mMenuDataMap.get(decodeMenuId(id)).mIndex);
+        getAndUpdateContentDatas(mType, mMenuDataMap.get(decodeMenuId(id)));
 
         mAdapter.notifyDataSetChanged();
 
@@ -258,14 +272,14 @@ public class AncientPoetryActivity extends AppCompatActivity
 
     /**
      * 从服务器获取相关作品
-     * @param type 作品类型 {@Util.LITERATURE_TYPE}
-     * @param author 作者名称 {@Author.mIndex}
+     * @param type 作品类型 {@link Util.LITERATURE_TYPE}
+     * @param author 作者名称 {@link Author#mIndex}
      */
-    private void getAndUpdateContentDatas(String type, String author) {
+    private void getAndUpdateContentDatas(String type, Author author) {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                NetworkConnection.getInstance().getJSONByVolley(UrlUtils.getLiteratureListUrlByAuthor(type, author), new Response.Listener<JSONObject>() {
+                NetworkConnection.getInstance().getJSONByVolley(UrlUtils.getLiteratureListUrlByAuthor(type, author.mIndex), new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
@@ -273,7 +287,7 @@ public class AncientPoetryActivity extends AppCompatActivity
                             int code = response.optInt("code");
                             if (code == 0) {
                                 ArrayList<PoetryCardContent> contentList = new ArrayList<PoetryCardContent>();
-                                String author = response.getString("name");
+                                String authorName = response.getString("name");
                                 JSONObject json;
 
                                 JSONArray array = response.getJSONArray("data");
@@ -281,13 +295,17 @@ public class AncientPoetryActivity extends AppCompatActivity
                                     json =  (JSONObject) array.get(i);
                                     PoetryCardContent content = new PoetryCardContent();
                                     content.mId = json.getString("id");
-                                    content.mAuthor = author;
+                                    content.mAuthor = authorName;
                                     content.mTitle = json.getString("title");
                                     content.mAbbr = json.getString("abbr");
                                     contentList.add(content);
                                 }
                                 mAdapter.updateDatas(contentList);
                                 mAdapter.notifyDataSetChanged();
+                                mCurrentAuthor = author;
+
+                                //下载当前作者的所有作品并存放到数据库
+                                updateDatabases(contentList);
                             } else {
                                 Log.d(TAG, "Response error!");
                             }
@@ -300,6 +318,81 @@ public class AncientPoetryActivity extends AppCompatActivity
             }
         });
         thread.start();
+    }
+
+    private void updateDatabases(ArrayList<PoetryCardContent> contentList) {
+        if (!(new NetworkStatus()).isWifiConnected()) {
+            return;
+        }
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (PoetryCardContent content : contentList) {
+                    NetworkConnection.getInstance().getJSONByVolley(UrlUtils.getLiteratureContentUrlById(mCurrentAuthor.mId + Util.literatureTypeToInt(mType) + content.mId), new Response.Listener<JSONObject>() {
+
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                Author.LiteratureDetail detail = new Author.LiteratureDetail();
+                                try {
+                                    String id = response.getString("id");
+                                    if (id != null && id.length() > 0) {
+                                        detail.mId = id;
+                                    }
+                                } catch (JSONException e) {
+                                    Log.d(TAG, "没有id!");
+                                    return;
+                                }
+                                try {
+                                    String author = response.getString("author");
+                                    if (author != null && author.length() > 0) {
+                                        detail.mAuthor = author;
+                                    }
+                                } catch (JSONException e) {
+                                    Log.d(TAG, "没有author!");
+                                }
+                                try {
+                                    String title = response.getString("title");
+                                    if (title != null && title.length() > 0) {
+                                        detail.mTitle = title;
+                                    }
+                                } catch (JSONException e) {
+                                    Log.d(TAG, "没有title!");
+                                }
+                                try {
+                                    String from = response.getString("from");
+                                    if (from != null && from.length() > 0) {
+                                        detail.mFrom = from;
+                                    }
+                                } catch (JSONException e) {
+                                    Log.d(TAG, "没有From!");
+                                }
+                                try {
+                                    String content = response.getString("content");
+                                    detail.mContent = content;
+                                } catch (JSONException e) {
+                                    Log.d(TAG, "没有内容!");
+                                }
+                                try {
+                                    String annotation = response.getString("annotation");
+                                    detail.mAnnotation = annotation;
+                                } catch (JSONException e) {
+                                    Log.d(TAG, "没有注释!");
+                                }
+
+                                //更新到数据库
+                                LiteratureDatabaseHelper.getInstance().insertLiterature(detail);
+                            } catch (Exception e) {
+                                Log.e(TAG, e.toString());
+                            }
+                        }
+                    }, null);
+                }
+            }
+        });
+        thread.start();
+
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this, 0);
     }
 
 //    String getJson(URL url) {
