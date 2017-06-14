@@ -103,12 +103,14 @@ public class LiteratureDetailActivity extends AppCompatActivity {
     }
 
     private void getContent(String id) {
-        //如果本地数据库没有，则从网络获取数据
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 Author.LiteratureDetail detail = new Author.LiteratureDetail();
 
+                /*
+                 * 先查询本地数据库，如果数据库没有相关数据，再从网络获取
+                 */
                 SQLiteDatabase sqlDB = LiteratureDatabaseHelper.getInstance().getReadableDatabase();
                 Cursor cursor = sqlDB.query(LiteratureDatabaseHelper.LiteratureColumns.TABLE_NAME, null,
                         LiteratureDatabaseHelper.LiteratureColumns.LITERATURE_INDEX + "=?", new String[] {id}, null, null, null);
@@ -126,6 +128,7 @@ public class LiteratureDetailActivity extends AppCompatActivity {
                             detail.mContent = cursor.getString(cursor.getColumnIndex(LiteratureDatabaseHelper.LiteratureColumns.LITERATURE_CONTENT));
                             detail.mAnnotation = cursor.getString(cursor.getColumnIndex(LiteratureDatabaseHelper.LiteratureColumns.LITERATURE_ANNOTATION));
                             updateUI(detail);
+                            cursor.close();
                             return;
                         }
                     }

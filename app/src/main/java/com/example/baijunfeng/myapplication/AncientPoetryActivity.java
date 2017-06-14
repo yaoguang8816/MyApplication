@@ -320,6 +320,11 @@ public class AncientPoetryActivity extends AppCompatActivity
         thread.start();
     }
 
+    /**
+     * 通过当前作者作品 {@link PoetryCardContent} 列表来获取所有作品的详细内容 {@link Author.LiteratureDetail},
+     * 把获取到的内容存储到数据库表 {@link LiteratureDatabaseHelper.LiteratureColumns#TABLE_NAME} 中。
+     * @param contentList 作品列表
+     */
     private void updateDatabases(ArrayList<PoetryCardContent> contentList) {
         if (!(new NetworkStatus()).isWifiConnected()) {
             return;
@@ -391,8 +396,6 @@ public class AncientPoetryActivity extends AppCompatActivity
             }
         });
         thread.start();
-
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this, 0);
     }
 
 //    String getJson(URL url) {

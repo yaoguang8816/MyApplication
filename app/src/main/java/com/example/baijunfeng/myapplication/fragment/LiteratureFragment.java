@@ -74,6 +74,7 @@ public class LiteratureFragment extends Fragment implements View.OnClickListener
         view.findViewById(R.id.card_view_shi).setOnClickListener(this);
         view.findViewById(R.id.card_view_ci).setOnClickListener(this);
         view.findViewById(R.id.card_view_guwen).setOnClickListener(this);
+        view.findViewById(R.id.card_view_gutishi).setOnClickListener(this);
 
         return view;
     }
