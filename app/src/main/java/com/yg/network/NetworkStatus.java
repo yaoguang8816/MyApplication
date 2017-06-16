@@ -1,10 +1,10 @@
-package com.example.baijunfeng.myapplication.network;
+package com.yg.network;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-import com.example.baijunfeng.myapplication.MyApplication;
+import com.yg.MyApplication;
 
 /**
  * Created by baijunfeng on 17/6/13.

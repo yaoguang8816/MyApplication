@@ -1,4 +1,4 @@
-package com.example.baijunfeng.myapplication.fragment;
+package com.yg.fragment;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -11,8 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.example.baijunfeng.myapplication.R;
-import com.example.baijunfeng.myapplication.TabActivity;
+import com.yg.R;
 
 /**
  * Created by baijunfeng on 17/3/13.

@@ -1,16 +1,12 @@
-package com.example.baijunfeng.myapplication.network;
-
-import android.app.Application;
-import android.app.ProgressDialog;
+package com.yg.network;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.baijunfeng.myapplication.MyApplication;
-import com.example.baijunfeng.myapplication.utils.MyJsonObjectRequest;
+import com.yg.MyApplication;
+import com.yg.utils.MyJsonObjectRequest;
 
 import org.json.JSONObject;
 

@@ -1,4 +1,4 @@
-package com.example.baijunfeng.myapplication;
+package com.yg;
 
 import android.content.Intent;
 import android.database.Cursor;
@@ -14,19 +14,13 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.android.volley.Response;
-import com.example.baijunfeng.myapplication.R;
-import com.example.baijunfeng.myapplication.database.LiteratureContentProvider;
-import com.example.baijunfeng.myapplication.database.LiteratureDatabaseHelper;
-import com.example.baijunfeng.myapplication.network.NetworkConnection;
-import com.example.baijunfeng.myapplication.utils.Author;
-import com.example.baijunfeng.myapplication.utils.PoetryCardContent;
-import com.example.baijunfeng.myapplication.utils.UrlUtils;
+import com.yg.database.LiteratureDatabaseHelper;
+import com.yg.network.NetworkConnection;
+import com.yg.utils.Author;
+import com.yg.utils.UrlUtils;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.ArrayList;
 
 public class LiteratureDetailActivity extends AppCompatActivity {
     public static final String TAG = "LiteratureDetail";

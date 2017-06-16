@@ -1,18 +1,17 @@
-package com.example.baijunfeng.myapplication.fragment;
+package com.yg.fragment;
 
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.CardView;
 import android.transition.Explode;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.baijunfeng.myapplication.AncientPoetryActivity;
-import com.example.baijunfeng.myapplication.R;
-import com.example.baijunfeng.myapplication.utils.Util;
+import com.yg.AncientPoetryActivity;
+import com.yg.R;
+import com.yg.utils.Util;
 
 /**
  * A simple {@link Fragment} subclass.

@@ -1,4 +1,4 @@
-package com.example.baijunfeng.myapplication.database;
+package com.yg.database;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -6,8 +6,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 
-import com.example.baijunfeng.myapplication.MyApplication;
-import com.example.baijunfeng.myapplication.utils.Author;
+import com.yg.MyApplication;
+import com.yg.utils.Author;
 
 /**
  * Created by baijunfeng on 17/6/13.

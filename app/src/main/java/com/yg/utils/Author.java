@@ -1,4 +1,4 @@
-package com.example.baijunfeng.myapplication.utils;
+package com.yg.utils;
 
 /**
  * Created by baijunfeng on 17/6/1.

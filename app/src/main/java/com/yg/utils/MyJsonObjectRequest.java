@@ -1,4 +1,4 @@
-package com.example.baijunfeng.myapplication.utils;
+package com.yg.utils;
 
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;

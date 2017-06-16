@@ -1,19 +1,15 @@
-package com.example.baijunfeng.myapplication.database;
+package com.yg.database;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
-import android.util.Log;
 
-import com.example.baijunfeng.myapplication.utils.Author;
-import com.example.baijunfeng.myapplication.utils.PoetryCardContent;
+import com.yg.utils.Author;
 
 /**
  * Created by baijunfeng on 17/6/13.
@@ -29,7 +25,7 @@ public class LiteratureContentProvider extends ContentProvider {
     public static final int MEMBER = 1002;
 
     private SQLiteDatabase mSqlDB;
-    private LiteratureDatabaseHelper    mDBHelper;
+    private LiteratureDatabaseHelper mDBHelper;
 
     static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 

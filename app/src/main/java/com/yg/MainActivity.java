@@ -1,4 +1,4 @@
-package com.example.baijunfeng.myapplication;
+package com.yg;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +10,8 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+
+import com.yg.R;
 
 import java.io.BufferedReader;
 import java.io.File;

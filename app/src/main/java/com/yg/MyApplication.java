@@ -1,4 +1,4 @@
-package com.example.baijunfeng.myapplication;
+package com.yg;
 
 import android.app.Application;
 

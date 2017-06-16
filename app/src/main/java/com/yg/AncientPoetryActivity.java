@@ -1,50 +1,42 @@
-package com.example.baijunfeng.myapplication;
+package com.yg;
 
-import android.content.ContentValues;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.android.volley.Response;
-import com.example.baijunfeng.myapplication.adapter.AncientPoetryAdapter;
-import com.example.baijunfeng.myapplication.adapter.NoteAdapter;
-import com.example.baijunfeng.myapplication.database.LiteratureContentProvider;
-import com.example.baijunfeng.myapplication.database.LiteratureDatabaseHelper;
-import com.example.baijunfeng.myapplication.network.NetworkConnection;
-import com.example.baijunfeng.myapplication.network.NetworkStatus;
-import com.example.baijunfeng.myapplication.utils.Author;
-import com.example.baijunfeng.myapplication.utils.PoetryCardContent;
-import com.example.baijunfeng.myapplication.utils.UrlUtils;
-import com.example.baijunfeng.myapplication.utils.Util;
+import com.yg.adapter.AncientPoetryAdapter;
+import com.yg.adapter.NoteAdapter;
+import com.yg.database.LiteratureDatabaseHelper;
+import com.yg.network.NetworkConnection;
+import com.yg.network.NetworkStatus;
+import com.yg.utils.Author;
+import com.yg.utils.PoetryCardContent;
+import com.yg.utils.UrlUtils;
+import com.yg.utils.Util;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+
 /**
  * Created by baijunfeng on 17/3/17.
  *

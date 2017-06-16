@@ -1,4 +1,4 @@
-package com.example.baijunfeng.myapplication.adapter;
+package com.yg.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.CardView;
@@ -8,8 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.baijunfeng.myapplication.R;
-import com.example.baijunfeng.myapplication.utils.PoetryCardContent;
+import com.yg.R;
+import com.yg.utils.PoetryCardContent;
 
 import java.util.List;
 
