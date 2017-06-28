@@ -365,10 +365,15 @@ public class AncientPoetryActivity extends AppCompatActivity
                                     Log.d(TAG, "没有From!");
                                 }
                                 try {
+                                    //如果内容为空，不做存储
                                     String content = response.getString("content");
                                     detail.mContent = content;
+                                    if (detail.mContent == null || detail.mContent.length() == 0) {
+                                        return;
+                                    }
                                 } catch (JSONException e) {
                                     Log.d(TAG, "没有内容!");
+                                    return;
                                 }
                                 try {
                                     String annotation = response.getString("annotation");

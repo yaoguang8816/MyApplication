@@ -174,8 +174,11 @@ public class LiteratureDetailActivity extends AppCompatActivity {
                             }
                             updateUI(detail);
 
-                            //从网络获取的新数据，更新到数据库
-                            LiteratureDatabaseHelper.getInstance().insertLiterature(detail);
+                            //如果内容为空，则不进行存储
+                            if (detail.mContent != null || detail.mContent.length() > 0) {
+                                //从网络获取的新数据，更新到数据库
+                                LiteratureDatabaseHelper.getInstance().insertLiterature(detail);
+                            }
                         } catch (Exception e) {
                             Log.e(TAG, e.toString());
                         }
